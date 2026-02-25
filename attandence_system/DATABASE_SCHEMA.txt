@@ -1,0 +1,237 @@
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   ATTENDANCE MANAGEMENT SYSTEM                              ║
+║                        DATABASE SCHEMA DIAGRAM                              ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              MAIN TABLES                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────┐
+│        USERS             │  ← Main authentication table
+├──────────────────────────┤
+│ PK: user_id (INT)        │
+│     username (VARCHAR)   │
+│     password (VARCHAR)   │  ← SHA-256 hashed
+│     full_name (VARCHAR)  │
+│     email (VARCHAR)      │
+│     user_type (ENUM)     │  ← 'student' or 'teacher'
+│     created_at (TIMESTAMP)│
+└──────────────────────────┘
+         │
+         │ (1:1 relationship)
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+
+┌──────────────────────────┐         ┌──────────────────────────┐
+│       STUDENTS           │         │       TEACHERS           │
+├──────────────────────────┤         ├──────────────────────────┤
+│ PK: student_id (INT)     │         │ PK: teacher_id (INT)     │
+│ FK: user_id (INT)        │         │ FK: user_id (INT)        │
+│     roll_number (VARCHAR)│         │     employee_id (VARCHAR)│
+│     class (VARCHAR)      │         │     department (VARCHAR) │
+│     phone (VARCHAR)      │         │     phone (VARCHAR)      │
+└──────────────────────────┘         └──────────────────────────┘
+         │                                      │
+         │                                      │
+         │ (1:N relationship)                   │ (N:1 relationship)
+         │                                      │
+         └──────────────┬─────────────────────┘
+                        │
+                        ▼
+                ┌──────────────────────────┐
+                │      ATTENDANCE          │
+                ├──────────────────────────┤
+                │ PK: attendance_id (INT)  │
+                │ FK: student_id (INT)     │  ← References STUDENTS
+                │ FK: marked_by (INT)      │  ← References TEACHERS
+                │     date (DATE)          │
+                │     status (ENUM)        │  ← 'Present', 'Absent', 'Late'
+                │     marked_at (TIMESTAMP)│
+                │     remarks (TEXT)       │
+                │                          │
+                │ UNIQUE: (student_id, date)│  ← One record per student per day
+                └──────────────────────────┘
+                        │
+                        │ (Triggers auto-create)
+                        │
+                        ▼
+                ┌──────────────────────────┐
+                │     NOTIFICATIONS        │
+                ├──────────────────────────┤
+                │ PK: notification_id(INT) │
+                │ FK: user_id (INT)        │  ← References USERS
+                │     message (TEXT)       │
+                │     is_read (BOOLEAN)    │
+                │     created_at (TIMESTAMP)│
+                └──────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              DATABASE VIEWS                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  v_student_attendance_summary                                 │
+├──────────────────────────────────────────────────────────────┤
+│  Aggregates attendance statistics for each student:          │
+│  - Total days, Present days, Absent days, Late days          │
+│  - Attendance percentage                                     │
+│  - Student details (name, roll number, class)                │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  v_recent_attendance                                          │
+├──────────────────────────────────────────────────────────────┤
+│  Shows last 100 attendance records with:                     │
+│  - Student details, Date, Status, Remarks                    │
+│  - Teacher who marked attendance                             │
+│  - Timestamp                                                 │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  v_daily_attendance                                           │
+├──────────────────────────────────────────────────────────────┤
+│  Daily summary showing:                                       │
+│  - Total students marked                                     │
+│  - Present, Absent, Late counts                              │
+│  - Overall attendance percentage                             │
+└──────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STORED PROCEDURES                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+sp_get_student_report(student_id)
+  → Returns complete attendance history for a student
+
+sp_mark_bulk_attendance(date, status, teacher_id, class)
+  → Marks attendance for all students in a class at once
+
+sp_get_attendance_stats(student_id)
+  → Returns attendance statistics for a student
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            TRIGGERS                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+tr_attendance_notification (AFTER INSERT on ATTENDANCE)
+  → Automatically creates notification when attendance is marked
+
+tr_attendance_update_notification (AFTER UPDATE on ATTENDANCE)
+  → Automatically creates notification when attendance is updated
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         RELATIONSHIPS SUMMARY                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+USERS (1) ──────→ (1) STUDENTS
+USERS (1) ──────→ (1) TEACHERS
+STUDENTS (1) ───→ (N) ATTENDANCE
+TEACHERS (1) ───→ (N) ATTENDANCE (as marker)
+USERS (1) ──────→ (N) NOTIFICATIONS
+ATTENDANCE ────→ NOTIFICATIONS (via trigger)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         KEY CONSTRAINTS                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+1. CASCADE DELETE: Deleting a user automatically deletes:
+   - Associated student/teacher record
+   - All attendance records (if student)
+   - All notifications
+
+2. UNIQUE CONSTRAINTS:
+   - username (must be unique)
+   - email (must be unique)
+   - roll_number (must be unique)
+   - employee_id (must be unique)
+   - (student_id, date) in attendance table (one record per day)
+
+3. FOREIGN KEY CONSTRAINTS:
+   - All student records must have valid user_id
+   - All teacher records must have valid user_id
+   - All attendance records must have valid student_id and teacher_id
+   - All notifications must have valid user_id
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         INDEXES (for performance)                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+USERS:
+  - idx_username
+  - idx_user_type
+
+STUDENTS:
+  - idx_roll_number
+  - idx_class
+
+TEACHERS:
+  - idx_employee_id
+  - idx_department
+
+ATTENDANCE:
+  - idx_date
+  - idx_status
+  - idx_student_date
+  - idx_attendance_student_date_status
+  - idx_attendance_date_status
+
+NOTIFICATIONS:
+  - idx_user_id
+  - idx_is_read
+  - idx_created_at
+  - idx_notifications_user_read
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         DATA FLOW                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+User Registration Flow:
+1. Insert into USERS table
+2. Insert into STUDENTS or TEACHERS table (based on user_type)
+
+Attendance Marking Flow:
+1. Teacher marks attendance → Insert/Update ATTENDANCE table
+2. Trigger fires → Auto-create NOTIFICATION
+3. Student logs in → View NOTIFICATION
+
+Attendance Query Flow:
+1. Student/Teacher queries → Use VIEWS for optimized results
+2. Complex reports → Use STORED PROCEDURES
+3. Real-time stats → Direct table queries with indexes
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      SAMPLE DATA INCLUDED                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Users: 13 total (10 students + 3 teachers)
+Attendance Records: 30+ records (last 30 days for demo student, 7 days for others)
+Notifications: 5+ sample notifications
+All passwords: "teacher123" (SHA-256 hashed)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      DATABASE SIZE ESTIMATE                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Empty Structure: ~50 KB
+With Sample Data: ~200 KB
+Expected with 1000 students, 1 year data: ~50-100 MB
+Storage Engine: InnoDB (supports transactions)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                          END OF SCHEMA DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════

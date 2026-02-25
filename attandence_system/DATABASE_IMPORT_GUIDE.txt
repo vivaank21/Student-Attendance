@@ -1,0 +1,214 @@
+"""
+DATABASE IMPORT GUIDE
+====================
+
+This guide will help you import the attendance_system.sql database file.
+
+METHOD 1: Using MySQL Command Line (Recommended)
+=================================================
+
+Step 1: Open Terminal/Command Prompt
+
+Step 2: Navigate to the directory containing attendance_system.sql
+    cd path/to/your/files
+
+Step 3: Import the database
+    mysql -u root -p < attendance_system.sql
+
+    (You'll be prompted to enter your MySQL password)
+
+Step 4: Verify the import
+    mysql -u root -p
+    USE attendance_system;
+    SHOW TABLES;
+    SELECT COUNT(*) FROM users;
+    EXIT;
+
+
+METHOD 2: Using MySQL Workbench (GUI)
+======================================
+
+Step 1: Open MySQL Workbench
+
+Step 2: Connect to your MySQL server
+
+Step 3: Click on "Server" menu → "Data Import"
+
+Step 4: Select "Import from Self-Contained File"
+
+Step 5: Browse and select "attendance_system.sql"
+
+Step 6: Under "Default Target Schema" → Select "New..." and name it "attendance_system"
+
+Step 7: Click "Start Import"
+
+Step 8: Verify by checking tables in the Schemas panel
+
+
+METHOD 3: Using phpMyAdmin (Web Interface)
+===========================================
+
+Step 1: Open phpMyAdmin in your browser
+
+Step 2: Click on "Import" tab
+
+Step 3: Click "Choose File" and select "attendance_system.sql"
+
+Step 4: Make sure format is set to "SQL"
+
+Step 5: Click "Go" at the bottom
+
+Step 6: Wait for import to complete
+
+Step 7: Check the left panel for "attendance_system" database
+
+
+METHOD 4: Using Python Script (Automated)
+==========================================
+
+Use the provided database_setup.py script:
+    python database_setup.py
+
+This will create the database structure and add demo data.
+
+
+WHAT'S INCLUDED IN THE DATABASE?
+=================================
+
+Tables Created:
+- users (all user accounts)
+- students (student-specific info)
+- teachers (teacher-specific info)
+- attendance (all attendance records)
+- notifications (user notifications)
+
+Sample Data:
+- 1 Demo Teacher Account
+- 10 Demo Student Accounts
+- 3 Teacher Accounts
+- 30+ Attendance Records
+- Sample Notifications
+
+Views Created:
+- v_student_attendance_summary
+- v_recent_attendance
+- v_daily_attendance
+
+Stored Procedures:
+- sp_get_student_report
+- sp_mark_bulk_attendance
+- sp_get_attendance_stats
+
+Triggers:
+- Auto-notification on attendance marking
+- Auto-notification on attendance update
+
+
+DEMO ACCOUNTS CREDENTIALS
+==========================
+
+All demo accounts use password: teacher123 (hashed in database)
+
+Teachers:
+- Username: teacher_demo | Email: teacher@demo.com
+- Username: sarah_jones | Email: sarah.jones@school.com
+- Username: robert_garcia | Email: robert.garcia@school.com
+
+Students:
+- Username: student_demo | Email: student@demo.com
+- Username: john_smith | Email: john.smith@school.com
+- Username: emma_johnson | Email: emma.johnson@school.com
+- Username: michael_brown | Email: michael.brown@school.com
+- Username: sophia_davis | Email: sophia.davis@school.com
+- Username: william_miller | Email: william.miller@school.com
+- Username: olivia_wilson | Email: olivia.wilson@school.com
+- Username: james_moore | Email: james.moore@school.com
+- Username: ava_taylor | Email: ava.taylor@school.com
+- Username: alexander_anderson | Email: alexander.anderson@school.com
+
+
+VERIFY SUCCESSFUL IMPORT
+=========================
+
+Run these queries to verify:
+
+1. Check all tables exist:
+    SHOW TABLES FROM attendance_system;
+
+2. Count users:
+    SELECT user_type, COUNT(*) FROM attendance_system.users GROUP BY user_type;
+
+3. Count students:
+    SELECT COUNT(*) FROM attendance_system.students;
+
+4. Count attendance records:
+    SELECT COUNT(*) FROM attendance_system.attendance;
+
+5. View sample data:
+    SELECT * FROM attendance_system.v_student_attendance_summary;
+
+
+TROUBLESHOOTING
+===============
+
+Error: "Access denied"
+Solution: Make sure you're using the correct MySQL username and password
+
+Error: "Database already exists"
+Solution: The SQL file drops and recreates the database, so this shouldn't happen
+         If it does, manually drop it first: DROP DATABASE attendance_system;
+
+Error: "Table already exists"
+Solution: Run: DROP DATABASE attendance_system;
+         Then import again
+
+Error: "Unknown database"
+Solution: Make sure MySQL server is running
+
+Error: Import takes too long
+Solution: This is normal for large datasets. Wait for completion.
+
+
+BACKUP YOUR DATABASE
+====================
+
+To create a backup:
+    mysqldump -u root -p attendance_system > backup.sql
+
+To restore from backup:
+    mysql -u root -p attendance_system < backup.sql
+
+
+POST-IMPORT STEPS
+=================
+
+1. Update database credentials in Python files:
+   - main.py (line 14-18)
+   - student_dashboard.py (line 56-61)
+   - teacher_dashboard.py (line 58-63)
+
+2. Test the connection:
+   python main.py
+
+3. Login with demo credentials
+
+4. Verify all features work
+
+
+NEED HELP?
+==========
+
+If you encounter issues:
+1. Check MySQL service is running
+2. Verify credentials are correct
+3. Check file permissions
+4. Review error messages carefully
+5. Consult MySQL documentation
+
+
+Database Import Guide Complete!
+================================
+"""
+
+if __name__ == "__main__":
+    print(__doc__)
