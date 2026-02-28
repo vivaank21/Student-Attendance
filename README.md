@@ -33,6 +33,28 @@ A professional, feature-rich attendance management system built with Python Tkin
 - **Warning**: #F39C12 (Orange)
 - **Light**: #ECF0F1 (Light Gray)
 
+## 📸 Screen Shots
+
+## Login screen
+<img width="1250" height="776" alt="image" src="https://github.com/user-attachments/assets/97722cf1-903a-4ebf-8266-f062cfb9da8c" />
+
+## Signup screen
+<img width="1246" height="785" alt="image" src="https://github.com/user-attachments/assets/23a3a832-3343-4dc8-afe9-bc3bc8e8b8c3" />
+
+## Student Dashboard screen
+<img width="1499" height="909" alt="image" src="https://github.com/user-attachments/assets/81d96932-0040-42df-9e04-2b3103932fb0" />
+
+## Teacher Dashboard screen
+<img width="1747" height="1011" alt="image" src="https://github.com/user-attachments/assets/3f0cdc75-f3a2-4342-b2b2-1afbb1ba4571" />
+
+## Student Management screen
+<img width="1750" height="1004" alt="image" src="https://github.com/user-attachments/assets/f559864c-c63c-4225-9fc5-8435534096c8" />
+
+
+
+
+
+
 ## 🛠️ Technologies Used
 
 - **Python 3.x**
@@ -270,7 +292,6 @@ For issues or questions:
 2. Verify all prerequisites are installed
 3. Ensure database is properly configured
 
-## 📸 Screenshots
 
 ### Login Screen
 Professional login interface with branding
